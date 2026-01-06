@@ -22,7 +22,8 @@
       "Bash(taskkill:*)",
       "Bash(python -m uvicorn src.main:app --reload)",
       "Bash(set DATABASE_URL=sqlite+aiosqlite:///./test.db)",
-      "Bash(python -m uvicorn src.main:app --reload --port 8001)"
+      "Bash(python -m uvicorn src.main:app --reload --port 8001)",
+      "Bash(npx kill-port 3000)"
     ]
   }
 }
