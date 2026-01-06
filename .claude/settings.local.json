@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch:*)",
+      "Bash(.specify/scripts/bash/create-new-feature.sh:*)",
+      "Skill(sp.implement)",
+      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(npx create-next-app@16:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(venvScriptsactivate)",
+      "Bash(pip install:*)",
+      "Bash(venv/Scripts/activate.bat)",
+      "Bash(npm run dev:*)",
+      "Bash(python -m pip install:*)",
+      "Bash(venvScriptsactivate.bat)",
+      "Bash(uvicorn:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "Bash(tasklist:*)",
+      "Bash(taskkill:*)",
+      "Bash(python -m uvicorn src.main:app --reload)",
+      "Bash(set DATABASE_URL=sqlite+aiosqlite:///./test.db)",
+      "Bash(python -m uvicorn src.main:app --reload --port 8001)"
+    ]
+  }
+}

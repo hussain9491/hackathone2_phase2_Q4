@@ -208,3 +208,10 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+
+## Active Technologies
+- Python 3.9+ (backend), TypeScript 5.3+ strict mode (frontend) + FastAPI 0.109+, SQLModel 0.0.14+, Next.js 16+, Better Auth with JWT, bcrypt, python-jose (001-multi-user-todo)
+- Neon Serverless PostgreSQL (connection string in .env) (001-multi-user-todo)
+
+## Recent Changes
+- 001-multi-user-todo: Added Python 3.9+ (backend), TypeScript 5.3+ strict mode (frontend) + FastAPI 0.109+, SQLModel 0.0.14+, Next.js 16+, Better Auth with JWT, bcrypt, python-jose
