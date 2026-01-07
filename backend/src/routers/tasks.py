@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Header
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 from typing import Dict, Any, Optional
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -6,6 +7,9 @@ from ..services.task_service import TaskService
 from ..dependencies import get_db_session
 from ..auth import decode_access_token
 import os
+
+# Security scheme for Swagger UI
+security = HTTPBearer()
 
 router = APIRouter(tags=["tasks"])
 
@@ -36,16 +40,10 @@ class TaskListResponse(BaseModel):
 class ErrorResponse(BaseModel):
     error: str
 
-async def get_current_user_id(authorization: str = Header(..., alias="Authorization")) -> str:
-    """Extract user_id from JWT token"""
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization required"
-        )
+def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+    """Extract user_id from JWT token using HTTPBearer security"""
+    token = credentials.credentials
 
-    # Remove "Bearer " prefix if present
-    token = authorization.replace("Bearer ", "")
     payload = decode_access_token(token)
 
     if not payload:
@@ -62,11 +60,10 @@ async def list_tasks(
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
     session: AsyncSession = Depends(get_db_session),
-    authorization: str = Header(..., alias="Authorization"),
+    auth_user_id: str = Depends(get_current_user_id),
 ):
     """List all tasks for user"""
     # Verify user_id matches token
-    auth_user_id = await get_current_user_id(authorization)
     if auth_user_id != user_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -101,11 +98,10 @@ async def create_task(
     user_id: str,
     request: CreateTaskRequest,
     session: AsyncSession = Depends(get_db_session),
-    authorization: str = Header(..., alias="Authorization"),
+    auth_user_id: str = Depends(get_current_user_id),
 ):
     """Create new task"""
     # Verify user_id matches token
-    auth_user_id = await get_current_user_id(authorization)
     if auth_user_id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -129,9 +125,16 @@ async def get_task(
     user_id: str,
     task_id: str,
     session: AsyncSession = Depends(get_db_session),
-    authorization: str = Header(..., alias="Authorization"),
+    auth_user_id: str = Depends(get_current_user_id),
 ):
     """Get single task"""
+    # Verify user_id matches token
+    if auth_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
     task_service = TaskService(session)
     task = await task_service.get_task(task_id, user_id)
     return TaskResponse(
@@ -150,9 +153,16 @@ async def update_task(
     task_id: str,
     request: UpdateTaskRequest,
     session: AsyncSession = Depends(get_db_session),
-    authorization: str = Header(..., alias="Authorization"),
+    auth_user_id: str = Depends(get_current_user_id),
 ):
     """Update task"""
+    # Verify user_id matches token
+    if auth_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot update task for different user"
+        )
+
     task_service = TaskService(session)
     task = await task_service.update_task(task_id, user_id, request.title, request.description)
     return TaskResponse(
@@ -170,9 +180,16 @@ async def delete_task(
     user_id: str,
     task_id: str,
     session: AsyncSession = Depends(get_db_session),
-    authorization: str = Header(..., alias="Authorization"),
+    auth_user_id: str = Depends(get_current_user_id),
 ):
     """Delete task"""
+    # Verify user_id matches token
+    if auth_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot delete task for different user"
+        )
+
     task_service = TaskService(session)
     success = await task_service.delete_task(task_id, user_id)
     if success:
@@ -187,9 +204,16 @@ async def toggle_task_complete(
     user_id: str,
     task_id: str,
     session: AsyncSession = Depends(get_db_session),
-    authorization: str = Header(..., alias="Authorization"),
+    auth_user_id: str = Depends(get_current_user_id),
 ):
     """Toggle task completion status"""
+    # Verify user_id matches token
+    if auth_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot toggle task for different user"
+        )
+
     task_service = TaskService(session)
     task = await task_service.toggle_task(task_id, user_id)
     return TaskResponse(

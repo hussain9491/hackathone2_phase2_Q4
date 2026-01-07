@@ -79,6 +79,43 @@ npm run dev
 - `DELETE /api/{user_id}/tasks/{task_id}` - Delete task
 - `PATCH /api/{user_id}/tasks/{task_id}/complete` - Toggle completion
 
+### Authentication Requirements
+
+All task endpoints require a valid JWT token in the Authorization header:
+
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+### Example Usage
+
+**1. Sign up to get a token:**
+```bash
+curl -X POST http://localhost:8000/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "password123"
+  }'
+```
+
+**2. Use the returned token to access tasks:**
+```bash
+curl -X GET "http://localhost:8000/api/YOUR_USER_ID/tasks?limit=10&offset=0" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**3. Create a new task:**
+```bash
+curl -X POST http://localhost:8000/api/YOUR_USER_ID/tasks \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "title": "New Task",
+    "description": "Task description"
+  }'
+```
+
 ## Security
 
 - JWT tokens expire after 7 days

@@ -23,7 +23,13 @@
       "Bash(python -m uvicorn src.main:app --reload)",
       "Bash(set DATABASE_URL=sqlite+aiosqlite:///./test.db)",
       "Bash(python -m uvicorn src.main:app --reload --port 8001)",
-      "Bash(npx kill-port 3000)"
+      "Bash(npx kill-port 3000)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: Replace manual forms with functional auth components on home page\n\n- Replace non-functional manual HTML forms with actual SignupFormInline and SigninFormInline components\n- Use the same API client functions \\(signup/signin\\) that were already tested and working\n- Implement proper state management for form inputs, loading states, and error handling\n- Ensure successful authentication redirects to /dashboard and stores JWT token\n- Maintain the existing UI design while adding full functionality to auth forms\n\nThe home page now has fully functional signup and signin forms that connect\nto the backend API, handle errors properly, show loading states, and\nredirect users to the dashboard after successful authentication.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(venv/Scripts/python.exe -m uvicorn src.main:app --reload --port 8000)",
+      "Bash(venv/Scripts/python.exe:*)",
+      "Bash(venv/Scripts/pip.exe install httpx)",
+      "Bash(python -m venv venv)",
+      "Bash(python -m uvicorn src.main:app --reload --port 8000)"
     ]
   }
 }
