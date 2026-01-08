@@ -62,7 +62,9 @@
       "Bash(powershell \"Stop-Process -Name node -Force -ErrorAction SilentlyContinue\")",
       "Bash(timeout 5 tail -n 20 \"C:\\\\Users\\\\user1542\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-user1542-Desktop-phase2-full-stack\\\\tasks\\\\b66f355.output\")",
       "Bash(python -m uvicorn src.main:app --host 0.0.0.0 --port 8000)",
-      "Bash(git add -A)"
+      "Bash(git add -A)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Fix SigninForm redirect issue and improve CORS configuration\n\n- Fixed React rendering error in SigninForm by moving redirect from render time to useEffect hook\n- Updated CORS configuration to support multiple frontend ports \\(3000 and 3001\\)\n- Updated README with information about fixed components and CORS settings\n- Added proper environment variable configuration for CORS origins\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(powershell \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force\")"
     ]
   }
 }

@@ -1,4 +1,4 @@
-'use client';
+  'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -7,37 +7,41 @@ import { Task, getTasks, createTask, updateTask, deleteTask, toggleTaskComplete 
 import { TaskForm } from '@/components/task-form';
 import { TaskList } from '@/components/task-list';
 import { Button } from '@/components/ui/button';
+import { Loading } from '@/components/ui/loading';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      router.push('/signin');
-      return;
+    // Only redirect if auth is loaded and user is not authenticated
+    if (!authLoading) {
+      if (!user) {
+        router.replace('/signin');
+      } else {
+        // Load tasks if user is authenticated
+        loadTasks();
+      }
     }
-
-    // Load tasks
-    loadTasks();
-  }, [user]);
+  }, [user, authLoading]);
 
   async function loadTasks() {
     if (!user) return;
-    setLoading(true);
+    setPageLoading(true);
     try {
       const response = await getTasks(user.id);
       setTasks(response.tasks);
     } catch (error) {
       console.error('Failed to load tasks:', error);
     } finally {
-      setLoading(false);
+      setPageLoading(false);
     }
   }
 
   async function handleCreateTask(title: string, description?: string) {
+    if (!user) return;
     try {
       const newTask: Task = await createTask(user.id, { title, description });
       setTasks([newTask, ...tasks]);
@@ -48,6 +52,7 @@ export default function DashboardPage() {
   }
 
   async function handleUpdateTask(taskId: string, title: string, description?: string) {
+    if (!user) return;
     try {
       const updatedTask: Task = await updateTask(user.id, taskId, { title, description });
       setTasks(tasks.map(t => t.id === taskId ? updatedTask : t));
@@ -58,6 +63,7 @@ export default function DashboardPage() {
   }
 
   async function handleDeleteTask(taskId: string) {
+    if (!user) return;
     if (!confirm('Are you sure you want to delete this task?')) return;
 
     try {
@@ -70,6 +76,7 @@ export default function DashboardPage() {
   }
 
   async function handleToggleTask(taskId: string) {
+    if (!user) return;
     try {
       const toggledTask: Task = await toggleTaskComplete(user.id, taskId);
       setTasks(tasks.map(t => t.id === taskId ? toggledTask : t));
@@ -79,8 +86,22 @@ export default function DashboardPage() {
     }
   }
 
+  // Show loading state while auth state is being determined
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loading text="Checking authentication..." />
+      </div>
+    );
+  }
+
+  // If user is not authenticated, we should have been redirected, but just in case:
   if (!user) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loading text="Redirecting to sign in..." />
+      </div>
+    );
   }
 
   return (
@@ -129,9 +150,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {loading ? (
+        {pageLoading ? (
           <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-r-2 border-primary"></div>
+            <Loading />
           </div>
         ) : (
           <TaskList

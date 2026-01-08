@@ -20,19 +20,25 @@ export default async function proxy(request: NextRequest) {
   }
 
   // Check token expiration
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const now = Math.floor(Date.now() / 1000);
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const now = Math.floor(Date.now() / 1000);
 
-    if (payload.exp < now) {
-      // Token expired - redirect to signin
+      if (payload.exp < now) {
+        // Token expired - redirect to signin
+        const url = new URL('/signin', request.url);
+        const response = NextResponse.redirect(url);
+        response.cookies.delete('auth_token');
+        return response;
+      }
+    } catch (error) {
+      // Invalid token - redirect to signin
       const url = new URL('/signin', request.url);
-      const response = NextResponse.redirect(url);
-      response.cookies.delete('auth_token');
-      return response;
+      return NextResponse.redirect(url);
     }
-  } catch (error) {
-    // Invalid token - redirect to signin
+  } else {
+    // No token - redirect to signin
     const url = new URL('/signin', request.url);
     return NextResponse.redirect(url);
   }
