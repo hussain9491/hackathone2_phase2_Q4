@@ -117,8 +117,8 @@ export function TaskItem({ task, onUpdate, onDelete, onToggle }: TaskItemProps) 
       </div>
 
       <div className="text-xs text-muted-foreground mt-2">
-        Created: {new Date(task.created_at).toLocaleDateString()} |
-        Updated: {new Date(task.updated_at).toLocaleDateString()}
+        Created: {task.created_at ? new Date(task.created_at).toLocaleDateString() : 'N/A'} |
+        Updated: {task.updated_at ? new Date(task.updated_at).toLocaleDateString() : 'N/A'}
       </div>
     </div>
   );

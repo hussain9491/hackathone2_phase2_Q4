@@ -14,7 +14,9 @@ export function TaskList({ tasks, onUpdate, onDelete, onToggle }: TaskListProps)
   // Sort by completed (pending first) then created_at DESC
   const sortedTasks = [...tasks].sort((a, b) => {
     if (a.completed === b.completed) {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA;
     }
     return a.completed ? 1 : -1;
   });

@@ -131,18 +131,18 @@ export default function DashboardPage() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Tasks</span>
-                  <span className="font-bold text-2xl">{tasks.length}</span>
+                  <span className="font-bold text-2xl">{tasks?.length ?? 0}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Completed</span>
                   <span className="font-bold text-2xl text-green-600">
-                    {tasks.filter(t => t.completed).length}
+                    {tasks?.filter(t => t.completed)?.length ?? 0}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Pending</span>
                   <span className="font-bold text-2xl text-amber-600">
-                    {tasks.filter(t => !t.completed).length}
+                    {tasks?.filter(t => !t.completed)?.length ?? 0}
                   </span>
                 </div>
               </div>

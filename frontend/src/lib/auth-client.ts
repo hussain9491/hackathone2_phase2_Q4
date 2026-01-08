@@ -57,8 +57,12 @@ export function getAuthUser(): User | null {
 export function decodeToken(token: string): DecodedToken | null {
   try {
     const payload = token.split('.')[1];
-    const decoded = atob(payload);
-    return JSON.parse(decoded);
+    // Replace atob with a more robust base64 decoding that works in both client and server
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const binary = typeof window !== 'undefined'
+      ? atob(base64)
+      : Buffer.from(base64, 'base64').toString('binary');
+    return JSON.parse(binary);
   } catch (error) {
     return null;
   }
