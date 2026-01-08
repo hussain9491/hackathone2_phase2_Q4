@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 from typing import Dict, Any, Optional
@@ -9,7 +9,7 @@ from ..auth import decode_access_token
 import os
 
 # Security scheme for Swagger UI
-security = HTTPBearer()
+security = HTTPBearer(scheme_name="Bearer")
 
 router = APIRouter(tags=["tasks"])
 
@@ -40,7 +40,7 @@ class TaskListResponse(BaseModel):
 class ErrorResponse(BaseModel):
     error: str
 
-def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+def get_current_user_id( credentials: HTTPAuthorizationCredentials = Security(security)) -> str:
     """Extract user_id from JWT token using HTTPBearer security"""
     token = credentials.credentials
 
