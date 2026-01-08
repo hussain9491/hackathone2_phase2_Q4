@@ -27,7 +27,7 @@ export function SignupForm() {
     try {
       const user: User = await signup({ email, password });
       setAuthUser(user);
-      router.push('/dashboard');
+      router.push('/signin');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

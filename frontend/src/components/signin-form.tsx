@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signin, User } from '@/lib/api-client';
 import { setAuthUser, isAuthenticated } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
@@ -14,10 +14,12 @@ export function SigninForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already authenticated
-  if (typeof window !== 'undefined' && isAuthenticated()) {
-    router.push('/dashboard');
-  }
+  // Redirect after component mounts if already authenticated
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.push('/dashboard');
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

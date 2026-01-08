@@ -1,61 +1,71 @@
 # Implementation Plan: Multi-User Todo Web Application
 
-**Branch**: `001-multi-user-todo` | **Date**: 2026-01-06 | **Spec**: [spec.md](spec.md)
+**Branch**: `001-multi-user-todo` | **Date**: 2026-01-08 | **Spec**: [specs/001-multi-user-todo/spec.md](specs/001-multi-user-todo/spec.md)
 **Input**: Feature specification from `/specs/001-multi-user-todo/spec.md`
+
+**Note**: This template is filled in by the `/sp.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
-Build a secure, production-ready multi-user todo web application that demonstrates spec-driven development principles. Users can manage their personal task lists with complete data isolation, modern authentication (JWT with 7-day expiry), and persistent cloud storage (Neon PostgreSQL). Application provides full CRUD operations for tasks with bcrypt password hashing (cost 12), strict user data isolation (no cross-user access), and responsive UI for mobile (375px+) and desktop (1920px). All implementation follows spec-driven workflow with zero manual coding, enforced TypeScript strict mode (frontend), Python type hints (backend), and environment variables for all secrets.
+Implement a secure multi-user Todo web application with JWT authentication, PostgreSQL persistence, and complete user data isolation. The application will provide authenticated users with the ability to create, view, edit, and delete their personal tasks while ensuring complete data isolation between users. The system will use a modern tech stack with Next.js 16+ frontend, FastAPI backend, and Neon Serverless PostgreSQL database with SQLModel ORM.
 
 ## Technical Context
 
 **Language/Version**: Python 3.9+ (backend), TypeScript 5.3+ strict mode (frontend)
 **Primary Dependencies**: FastAPI 0.109+, SQLModel 0.0.14+, Next.js 16+, Better Auth with JWT, bcrypt, python-jose
-**Storage**: Neon Serverless PostgreSQL (connection string in .env)
-**Testing**: Manual testing only (automated testing out of scope for Phase II)
-**Target Platform**: Web browser (Chrome, Firefox, Safari, Edge) - Modern browsers supporting ES6+ and CSS Grid/Flexbox
-**Project Type**: web
-**Performance Goals**: <200ms API response for CRUD, <100ms database query for 100 tasks, <2s frontend initial load on 3G
-**Constraints**: <200ms p95 API latency, <100MB memory footprint, mobile-responsive (375px min), bcrypt cost factor 12, 1000 tasks/user limit
-**Scale/Scope**: Demo/development environment supporting 100 concurrent users, multi-user data isolation, single application instance
+**Storage**: Neon Serverless PostgreSQL with SQLModel ORM
+**Testing**: pytest (backend), Jest/Cypress (frontend - planned)
+**Target Platform**: Web application (browser-based)
+**Project Type**: Web application (full-stack)
+**Performance Goals**: API response time < 200ms for CRUD operations, initial load < 2 seconds on 3G
+**Constraints**: JWT tokens expire after 7 days, passwords hashed with bcrypt cost factor 12, max 1000 tasks per user
+**Scale/Scope**: Multi-user support with complete data isolation, responsive design for mobile/desktop
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-| Principle | Status | Notes |
-|-----------|--------|--------|
-| I. User-Centric Security | ✅ PASS | Multi-user with JWT authentication, bcrypt hashing, complete data isolation enforced at database and API levels |
-| II. Spec-Driven Development | ✅ PASS | All implementation via Claude Code following spec→plan→tasks workflow, no manual coding |
-| III. API-First Architecture | ✅ PASS | RESTful API design, frontend/backend separation, JWT stateless authentication |
-| IV. Data Integrity | ✅ PASS | PostgreSQL storage, foreign key constraints, timestamps on all records |
-| Code Quality (TypeScript strict + Python type hints) | ✅ PASS | Constitution-mandated stack |
-| Security (JWT 7-day expiry, bcrypt, HTTPS, CORS) | ✅ PASS | All constraints in spec and plan |
-| API Conventions (/api/ prefix, user_id in path, standard codes) | ✅ PASS | Endpoints follow constitution rules |
-| Database Standards (SQLModel, foreign keys, timestamps, soft deletes) | ✅ PASS | Constitution requirements met |
-| Technology Stack (Next.js 16+, FastAPI, Neon, SQLModel, Better Auth) | ✅ PASS | Mandated stack specified |
-| Process (spec→plan→tasks→implement, review checkpoints) | ✅ PASS | Workflow enforced |
-| Performance (<200ms API, <2s frontend, indexed queries) | ✅ PASS | NFRs defined |
-| Data (1-200 char titles, 1000 tasks/user, cascade delete) | ✅ PASS | Constraints in spec |
+### Core Principles Compliance
+- **User-Centric Security**: ✓ All API endpoints require JWT authentication, user data isolated by user_id
+- **Spec-Driven Development**: ✓ Following specification → planning → tasks → implementation workflow
+- **API-First Architecture**: ✓ Using RESTful API design with stateless JWT authentication
+- **Data Integrity**: ✓ Using PostgreSQL with SQLModel ORM enforcing foreign key constraints
 
-**Overall Status**: ✅ PASS - No violations. All constitution principles aligned.
+### Standards Compliance
+- **Code Quality**: ✓ TypeScript strict mode for frontend, Python type hints for backend
+- **Security Standards**: ✓ JWT tokens with 7-day expiry, bcrypt password hashing
+- **API Conventions**: ✓ All endpoints prefixed with `/api/`, standard HTTP status codes
+- **Database Standards**: ✓ SQLModel ORM with created_at/updated_at timestamps on all records
+
+### Constraint Compliance
+- **Technology Stack**: ✓ Using Next.js 16+, FastAPI, Neon PostgreSQL, SQLModel, Better Auth
+- **Development Process**: ✓ Following spec → plan → tasks → implementation workflow
+- **Performance Requirements**: ✓ Targeting <200ms API response time, <2s initial load
+- **Data Limits**: ✓ Enforcing 1-200 char titles, 0-1000 char descriptions, 1000 tasks/user limit
+
+### Non-Negotiable Rules Compliance
+- **Authentication Required**: ✓ All endpoints (except signup/signin) require JWT verification
+- **User Isolation**: ✓ All queries filtered by authenticated user ID
+- **No Manual Coding**: ✓ Using Claude Code following spec-driven workflow
+- **Type Safety**: ✓ TypeScript strict mode and Python type hints enforced
+- **Environment Variables**: ✓ Secrets managed via environment variables
+- **HTTP Standards**: ✓ Appropriate HTTP status codes used consistently
+- **Timestamps**: ✓ All records include created_at and updated_at
+- **Foreign Keys**: ✓ Relationships enforced with foreign key constraints
+- **CORS Configuration**: ✓ Proper CORS configuration required
+- **Password Hashing**: ✓ Using bcrypt with cost factor 12 for password hashing
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/001-multi-user-todo/
+specs/[###-feature]/
 ├── plan.md              # This file (/sp.plan command output)
 ├── research.md          # Phase 0 output (/sp.plan command)
 ├── data-model.md        # Phase 1 output (/sp.plan command)
 ├── quickstart.md        # Phase 1 output (/sp.plan command)
 ├── contracts/           # Phase 1 output (/sp.plan command)
-│   ├── auth-api.md     # Authentication endpoints contract
-│   ├── task-api.md     # Task CRUD endpoints contract
-│   └── errors.md       # Error response format contract
-├── checklists/          # Quality checklists
-│   └── requirements.md # Specification quality checklist
 └── tasks.md             # Phase 2 output (/sp.tasks command - NOT created by /sp.plan)
 ```
 
@@ -64,61 +74,56 @@ specs/001-multi-user-todo/
 ```text
 backend/
 ├── src/
-│   ├── main.py          # FastAPI application entry point
-│   ├── database.py       # Async engine + session configuration
-│   ├── models/           # SQLModel schemas (User, Task)
-│   ├── routers/          # API route modules
-│   │   ├── auth.py      # Authentication endpoints
-│   │   └── tasks.py     # Task CRUD endpoints
-│   ├── repositories/     # Data access layer
-│   ├── services/         # Business logic layer
-│   └── dependencies.py   # Dependency injection
-├── tests/
-├── requirements.txt      # Python dependencies
-├── pyproject.toml       # Modern Python project config
-├── .env               # Environment variables (gitignored)
-└── .env.example       # Environment template
+│   ├── main.py
+│   ├── models/
+│   │   ├── user.py
+│   │   └── task.py
+│   ├── schemas/
+│   │   ├── user.py
+│   │   └── task.py
+│   ├── routers/
+│   │   ├── auth.py
+│   │   └── tasks.py
+│   ├── services/
+│   │   └── user_service.py
+│   └── database/
+│       └── database.py
+└── tests/
 
 frontend/
-├── app/
-│   ├── layout.tsx         # Root layout with providers
-│   ├── page.tsx           # Home/landing page
-│   ├── signin/             # Authentication pages
-│   │   └── page.tsx
-│   ├── signup/             # Authentication pages
-│   │   └── page.tsx
-│   ├── dashboard/           # Protected task management
-│   │   └── page.tsx
-│   ├── api/               # API proxy routes (optional)
-│   │   └── route.ts
-│   ├── proxy.ts            # Request proxy/middleware (Next.js 16)
-│   ├── globals.css         # Global Tailwind styles
-│   └── components/         # Reusable UI components
-│       ├── ui/              # shadcn/ui components
-│       ├── task-form.tsx    # Task creation/editing form
-│       ├── task-list.tsx    # Task display list
-│       └── task-item.tsx    # Individual task component
-├── lib/
-│   ├── db.ts              # Database connection utilities
-│   ├── utils.ts           # Helper functions
-│   └── api-client.ts      # API communication layer
-├── public/               # Static assets
-├── .env.local            # Frontend environment variables (gitignored)
-├── .env.example         # Environment template
-├── package.json          # Node.js dependencies
-├── tsconfig.json        # TypeScript configuration (strict mode)
-├── next.config.mjs      # Next.js 16 configuration
-└── tailwind.config.js    # Tailwind CSS configuration
-
-# Environment configuration (repository root)
-.env                    # Backend secrets (gitignored)
-.env.example            # Environment template with placeholders
-.gitignore               # Protects .env, node_modules, __pycache__
-README.md               # Setup and usage instructions
+├── src/
+│   ├── app/
+│   │   ├── page.tsx
+│   │   ├── signin/
+│   │   │   └── page.tsx
+│   │   ├── signup/
+│   │   │   └── page.tsx
+│   │   ├── dashboard/
+│   │   │   └── page.tsx
+│   │   ├── proxy.ts
+│   │   └── layout.tsx
+│   ├── components/
+│   │   ├── auth-provider.tsx
+│   │   ├── signup-form.tsx
+│   │   ├── signin-form.tsx
+│   │   ├── task-form.tsx
+│   │   ├── task-list.tsx
+│   │   └── ui/
+│   ├── lib/
+│   │   ├── api-client.ts
+│   │   └── auth-client.ts
+│   └── styles/
+│       └── globals.css
+└── tests/
 ```
 
-**Structure Decision**: Web application with separate frontend (Next.js 16) and backend (FastAPI) repositories at root level. This separation follows the sp.plan template Option 2 for web applications, enabling independent development and deployment while maintaining clear API contract between layers. Frontend communicates with backend via REST API, authentication handled via JWT tokens stored in httpOnly cookies.
+**Structure Decision**: Web application with separate backend (FastAPI) and frontend (Next.js) following Option 2 structure. Backend handles API and authentication, frontend provides responsive UI with authentication context management.
 
 ## Complexity Tracking
 
-> No violations - Constitution Check passed all gates. No complexity tracking required.
+> **Fill ONLY if Constitution Check has violations that must be justified**
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |

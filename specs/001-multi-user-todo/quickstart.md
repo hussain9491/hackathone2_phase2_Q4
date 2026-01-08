@@ -1,411 +1,155 @@
 # Quickstart Guide: Multi-User Todo Web Application
 
-**Date**: 2026-01-06
-**Feature**: Multi-User Todo Web Application
-**Target Audience**: Developers setting up development environment
-
 ## Prerequisites
 
-### Required Software
+- Node.js 18+ and npm/yarn
+- Python 3.9+
+- PostgreSQL (or Neon Serverless PostgreSQL account)
+- Git
 
-| Software | Version | Purpose |
-|-----------|---------|---------|
-| Node.js | 18+ or 20+ | Frontend runtime and package manager |
-| Python | 3.9+ | Backend runtime |
-| Git | Latest | Version control |
-| Modern Browser | Chrome, Firefox, Safari, Edge | Development/testing |
+## Setup Instructions
 
-### Required Accounts
-
-| Service | Purpose | Setup |
-|----------|---------|-------|
-| Neon PostgreSQL | Cloud database | Use provided connection string from .env |
-| GitHub | Code hosting (optional) | Repository: `https://github.com/hussain9491/hackathone2_phase2_Q4.git` |
-
----
-
-## Environment Setup
-
-### 1. Clone Repository
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/hussain9491/hackathone2_phase2_Q4.git
-cd hackathone2_phase2_Q4
+git clone <repository-url>
+cd <repository-name>
 ```
 
-### 2. Configure Environment Variables
-
-Create `.env` file at repository root (already created):
+### 2. Backend Setup
 
 ```bash
-# Backend environment variables
-DATABASE_URL=postgresql://neondb_owner:npg_yU7ure3ZkVvh@ep-misty-sky-a4gtr21e-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-BETTER_AUTH_SECRET=your-super-secret-jwt-key-change-this-in-production
-CORS_ORIGINS=http://localhost:3000
-```
-
-**Generate BETTER_AUTH_SECRET** (minimum 32 characters):
-
-```bash
-# Using Python
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-
-# Using Node.js
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-
-# Using OpenSSL (Linux/Mac)
-openssl rand -base64 32
-```
-
-**Note**: `.env` is in `.gitignore` - never commit secrets to repository!
-
-### 3. Backend Setup
-
-```bash
+# Navigate to backend directory
 cd backend
 
 # Create virtual environment
 python -m venv venv
-
-# Activate virtual environment
-# Windows:
-venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Or using uv (faster):
-pip install uv
-uv pip install -r requirements.txt
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your database URL and secrets
 ```
 
-**Expected `requirements.txt` content**:
-
-```text
-fastapi==0.109.0
-uvicorn[standard]==0.30.0
-sqlmodel==0.0.14
-pydantic==2.5.0
-python-jose[cryptography]==3.3.0
-python-multipart==0.0.6
-bcrypt==4.1.2
-httpx==0.26.0
-python-dotenv==1.0.0
-asyncpg==0.29.0
-```
-
-### 4. Frontend Setup
+### 3. Frontend Setup
 
 ```bash
+# Navigate to frontend directory
 cd frontend
 
 # Install dependencies
 npm install
 
-# Or using pnpm (faster):
-pnpm install
-
-# Or using yarn:
-yarn install
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your API URL and other configurations
 ```
 
-**Expected `package.json` key dependencies**:
-
-```json
-{
-  "dependencies": {
-    "next": "16.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "typescript": "^5.3.0",
-    "tailwindcss": "^3.4.0",
-    "clsx": "^2.1.0"
-  }
-}
-```
-
----
-
-## Running Development Servers
-
-### Start Backend
+### 4. Database Setup
 
 ```bash
+# From backend directory
 cd backend
 
-# Activate virtual environment (if not already)
-# Windows:
-venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
+# Activate virtual environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Run FastAPI with auto-reload
-uvicorn src.main:app --reload --port 8000
+# Run database migrations
+python -m alembic upgrade head
+
+# Or create initial tables if using raw SQL
+python -c "from src.database.database import engine; from src.models.user import User; from src.models.task import Task; User.metadata.create_all(engine); Task.metadata.create_all(engine)"
 ```
 
-**Expected Output**:
+### 5. Environment Variables
 
+#### Backend (.env)
+```env
+DATABASE_URL=postgresql://username:password@localhost:5432/todo_app
+SECRET_KEY=your-32-character-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=10080  # 7 days in minutes
 ```
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process
-INFO:     Started server process
+
+#### Frontend (.env.local)
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+NEXT_PUBLIC_BETTER_AUTH_SECRET=your-32-character-secret-key-here
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:8000
 ```
 
-**Access Swagger/OpenAPI Docs**: http://localhost:8000/docs
+## Running the Application
 
-### Start Frontend
+### 1. Start Backend Server
 
 ```bash
-cd frontend
+# From backend directory
+cd backend
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-# Run Next.js development server
+### 2. Start Frontend Server
+
+```bash
+# From frontend directory
+cd frontend
 npm run dev
 ```
 
-**Expected Output**:
+### 3. Access the Application
 
-```
-  ▲ Next.js 16.0.0
-  - Local:        http://localhost:3000
-  - Network:      http://192.168.x.x:3000
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- Backend Docs: http://localhost:8000/docs
 
- ✓ Ready in 2.3s
-```
+## Basic Usage
 
----
+### User Registration
+1. Visit http://localhost:3000
+2. Click "Sign Up" or navigate to /signup
+3. Enter email and password (minimum 8 characters)
+4. Account is created and you'll be redirected to login
 
-## Verify Setup
+### User Login
+1. Visit http://localhost:3000
+2. Click "Login" or navigate to /signin
+3. Enter registered email and password
+4. You'll be redirected to the dashboard
 
-### 1. Test Backend Health
+### Managing Tasks
+1. After login, you'll be on the dashboard
+2. Use the form to create new tasks
+3. Toggle task completion with the checkbox
+4. Edit tasks using the edit button
+5. Delete tasks using the delete button
 
-```bash
-curl http://localhost:8000/docs
-```
+## API Endpoints
 
-**Expected**: Swagger UI loads showing `/api/auth/signup` and `/api/auth/signin` endpoints.
+### Authentication
+- `POST /api/auth/signup` - Create new user
+- `POST /api/auth/signin` - Authenticate user
+- `POST /api/auth/signout` - Logout user
 
-### 2. Test Frontend Load
-
-```bash
-# Open browser to
-http://localhost:3000
-```
-
-**Expected**: Landing page with "Sign Up" and "Sign In" buttons.
-
-### 3. Create Test Account
-
-**Via API**:
-
-```bash
-curl -X POST http://localhost:8000/api/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "password": "password123"
-  }'
-```
-
-**Expected Response**:
-
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440174",
-  "email": "test@example.com",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "created_at": "2026-01-06T12:00:00Z",
-  "updated_at": "2026-01-06T12:00:00Z"
-}
-```
-
-### 4. Test Database Connection
-
-```bash
-# Connect to Neon PostgreSQL directly (for debugging)
-psql "postgresql://neondb_owner:npg_yU7ure3ZkVvh@ep-misty-sky-a4gtr21e-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
-```
-
-**Query**:
-
-```sql
-SELECT * FROM users;
-SELECT * FROM tasks;
-```
-
-**Expected**: Tables exist (schema created by SQLModel on first run).
-
----
-
-## Development Workflow
-
-### Spec-Driven Development Process
-
-1. **Specification** ([spec.md](../spec.md))
-   - Define user stories, requirements, success criteria
-
-2. **Planning** ([plan.md](../plan.md))
-   - Design architecture, data model, API contracts
-
-3. **Tasks** ([tasks.md](../tasks.md)) - Generated by `/sp.tasks` command
-   - Break down into atomic, testable tasks
-   - Organized by user story and phase
-
-4. **Implementation** - Via Claude Code only
-   - Execute tasks from `sp.tasks.md`
-   - No manual coding allowed
-   - Human review at checkpoints
-
-5. **Testing**
-   - Manual testing per specification scenarios
-   - Verify user isolation
-   - Test on mobile and desktop
-
-### Checkpoints
-
-| Checkpoint | Purpose | Reviewer |
-|------------|---------|-----------|
-| After tasks.md | Verify task breakdown completeness | Human reviewer |
-| After foundation setup | Verify infrastructure ready | Human reviewer |
-| After User Story 1 | Verify authentication works independently | Human reviewer |
-| After User Story 2 | Verify task management works independently | Human reviewer |
-| After User Story 3 | Verify data isolation | Human reviewer |
-| After User Story 4 | Verify responsive UI | Human reviewer |
-| Final | All requirements met, ready for demo | Human reviewer |
-
----
-
-## Directory Structure Reference
-
-### Quick Navigation
-
-```
-specs/001-multi-user-todo/        # Specification artifacts
-├── spec.md                          # Feature requirements
-├── plan.md                          # Implementation plan (this directory)
-├── research.md                       # Technical decisions
-├── data-model.md                     # Database schema
-├── quickstart.md                     # This file
-├── contracts/                        # API contracts
-│   ├── auth-api.md                  # Auth endpoints
-│   ├── task-api.md                  # Task CRUD endpoints
-│   └── errors.md                    # Error format
-├── checklists/                       # Quality gates
-│   └── requirements.md                # Spec validation
-└── tasks.md                          # Implementation tasks (create with /sp.tasks)
-
-backend/                              # FastAPI backend
-├── src/
-│   ├── main.py                        # Application entry
-│   ├── database.py                    # Database connection
-│   ├── models/                        # SQLModel schemas
-│   ├── routers/                       # API endpoints
-│   ├── repositories/                   # Data access
-│   ├── services/                       # Business logic
-│   └── dependencies.py                 # DI container
-└── requirements.txt                  # Python dependencies
-
-frontend/                              # Next.js frontend
-├── app/
-│   ├── layout.tsx                     # Root layout
-│   ├── page.tsx                       # Home
-│   ├── signin/                        # Auth pages
-│   ├── signup/                        # Auth pages
-│   ├── dashboard/                      # Protected app
-│   ├── proxy.ts                       # Request middleware
-│   └── components/                    # UI components
-├── lib/
-│   ├── api-client.ts                  # API client
-│   └── utils.ts                      # Helpers
-└── package.json                      # Node dependencies
-```
-
----
+### Tasks
+- `GET /api/tasks` - Get current user's tasks
+- `POST /api/tasks` - Create new task
+- `PUT /api/tasks/{task_id}` - Update task
+- `DELETE /api/tasks/{task_id}` - Delete task
+- `PATCH /api/tasks/{task_id}/toggle` - Toggle completion status
 
 ## Troubleshooting
 
-### Backend Issues
+### Common Issues
+- **Database Connection**: Ensure PostgreSQL is running and credentials are correct
+- **Port Conflicts**: Check if ports 8000 (backend) or 3000 (frontend) are already in use
+- **Environment Variables**: Verify all required environment variables are set
+- **Dependency Issues**: Reinstall dependencies if experiencing import errors
 
-**Issue**: `ModuleNotFoundError: No module named 'sqlmodel'`
-**Solution**: Activate virtual environment before running server:
-```bash
-# Windows
-venv\Scripts\activate
-# Linux/Mac
-source venv/bin/activate
-```
-
-**Issue**: Database connection failed
-**Solution**: Check `DATABASE_URL` in `.env` file. Ensure connection string is valid and internet connectivity exists.
-
-**Issue**: CORS error in browser
-**Solution**: Verify `CORS_ORIGINS` in `.env` matches frontend URL (http://localhost:3000)
-
-### Frontend Issues
-
-**Issue**: `Module not found: Can't resolve '@/components/...'`
-**Solution**: Check `tsconfig.json` has correct path aliases. Restart dev server after config changes.
-
-**Issue**: Build fails with TypeScript errors
-**Solution**: Ensure `tsconfig.json` has `"strict": true`. Fix type errors before proceeding.
-
-**Issue**: `Next.js 16 params is Promise error`
-**Solution**: Use `await params` pattern:
-```typescript
-// Wrong
-export default function Page({ params }: { params: { id: string } }) { ... }
-
-// Correct
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  ...
-}
-```
-
-### General Issues
-
-**Issue**: `.env` changes not reflected
-**Solution**: Restart both frontend and backend servers after environment variable changes.
-
-**Issue**: Git shows `.env` as untracked
-**Solution**: This is correct! `.env` should never be committed. Use `.env.example` as template.
-
-**Issue**: Database tables don't exist
-**Solution**: SQLModel creates tables on first run. If missing, restart backend server.
-
----
-
-## Next Steps
-
-1. **Generate tasks**: Run `/sp.tasks` to create atomic implementation tasks
-2. **Implement foundation**: Setup database, authentication, API structure
-3. **Build User Story 1**: Implement signup and signin
-4. **Build User Story 2**: Implement task CRUD operations
-5. **Build User Story 3**: Verify data isolation and security
-6. **Build User Story 4**: Implement responsive UI
-7. **Test end-to-end**: Complete user journey verification
-8. **Demo**: Present to hackathon judges
-
----
-
-## References
-
-- [Constitution](../../../.specify/memory/constitution.md) - Project principles
-- [Specification](../spec.md) - Feature requirements
-- [Plan](../plan.md) - Implementation architecture
-- [Data Model](../data-model.md) - Database schema
-- [Auth API Contract](../contracts/auth-api.md) - Authentication endpoints
-- [Task API Contract](../contracts/task-api.md) - Task management endpoints
-- [Errors Contract](../contracts/errors.md) - Error format specification
-
----
-
-## Skills Reference
-
-For technical implementation patterns, refer to these skills:
-
-- [Building Next.js Apps](../../../.claude/skills/building-nextjs-apps/SKILL.md) - Next.js 16 patterns, async params, proxy.ts
-- [Configuring Better Auth](../../../.claude/skills/configuring-better-auth/SKILL.md) - JWT authentication, bcrypt, token management
-- [Scaffolding FastAPI with Dapr](../../../.claude/skills/scaffolding-fastapi-dapr/SKILL.md) - SQLModel, async patterns, repository pattern
-- [Styling with Shadcn](../../../.claude/skills/styling-with-shadcn/SKILL.md) - Tailwind CSS, responsive UI components
+### Resetting the Application
+1. Drop and recreate the database
+2. Run migrations again
+3. Restart both frontend and backend servers

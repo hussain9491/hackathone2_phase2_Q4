@@ -31,7 +31,7 @@ pip install -r requirements.txt
 
 # Configure environment
 cp .env.example .env
-# Edit .env with your DATABASE_URL and BETTER_AUTH_SECRET
+# Edit .env with your DATABASE_URL, BETTER_AUTH_SECRET, and CORS_ORIGINS
 
 # Initialize database
 python -c "from src.database import init_db; import asyncio; asyncio.run(init_db())"
@@ -172,10 +172,23 @@ frontend/
 
 ## Development
 
-- Frontend runs on `http://localhost:3000`
+- Frontend runs on `http://localhost:3000` (or `http://localhost:3001` if port 3000 is in use)
 - Backend runs on `http://localhost:8000`
 - API docs available at `http://localhost:8000/docs`
 - Health check at `http://localhost:8000/health`
+
+### CORS Configuration
+
+The backend is configured to accept requests from multiple origins including:
+- `http://localhost:3000`
+- `http://localhost:3001`
+- `http://127.0.0.1:3000`
+- `http://127.0.0.1:3001`
+
+### Fixed Components
+
+- **SigninForm Component**: Fixed redirect issue by moving from render-time redirect to useEffect hook to prevent React rendering errors
+- **CORS Settings**: Updated to support multiple frontend ports (3000 and 3001)
 
 ## License
 

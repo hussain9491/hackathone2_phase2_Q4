@@ -19,7 +19,8 @@ export default function Home() {
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-sm text-slate-600 hover:text-slate-900">Features</a>
-            <a href="#auth" className="text-sm text-slate-600 hover:text-slate-900">Get Started</a>
+            <Link href="/signin" className="text-sm text-slate-600 hover:text-slate-900">Login</Link>
+            <Link href="/signup" className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors">Sign Up</Link>
           </nav>
         </div>
       </header>
@@ -154,10 +155,13 @@ export default function Home() {
             
           </div>
 
-          <div className="mt-8 text-center">
-            <a href="/dashboard" className="text-slate-600 hover:text-slate-900 underline text-sm">
+          <div className="mt-8 text-center space-x-4">
+            <Link href="/signin" className="text-slate-600 hover:text-slate-900 underline text-sm">
+              Go to login
+            </Link>
+            <Link href="/dashboard" className="text-slate-600 hover:text-slate-900 underline text-sm">
               Go to dashboard (requires authentication)
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -195,7 +199,7 @@ function SignupFormInline() {
     try {
       const user: User = await signup({ email, password });
       setAuthUser(user);
-      router.push('/dashboard');
+      router.push('/signin');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
