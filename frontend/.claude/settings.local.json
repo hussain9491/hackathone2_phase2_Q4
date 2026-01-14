@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(npx vercel --force)",
+      "Bash(npx vercel --force --yes)"
+    ]
+  }
+}

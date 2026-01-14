@@ -54,9 +54,10 @@ async def health_check():
 bearer_scheme = HTTPBearer(scheme_name="Bearer")
 
 # Import routers
-from .routers import auth, tasks
+from .routers import auth, tasks, chat
 app.include_router(auth.router)
 app.include_router(tasks.router, prefix="/api", tags=["tasks"])
+app.include_router(chat.router, prefix="/api", tags=["chat"])
 
 # Optional: Add global security requirement in OpenAPI
 def custom_openapi():

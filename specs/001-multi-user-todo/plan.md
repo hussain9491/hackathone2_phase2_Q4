@@ -1,66 +1,46 @@
-# Implementation Plan: Multi-User Todo Web Application
+# Implementation Plan: Phase III Todo AI Chatbot
 
-**Branch**: `001-multi-user-todo` | **Date**: 2026-01-08 | **Spec**: [specs/001-multi-user-todo/spec.md](specs/001-multi-user-todo/spec.md)
-**Input**: Feature specification from `/specs/001-multi-user-todo/spec.md`
+**Branch**: `001-multi-user-todo` | **Date**: 2026-01-13 | **Spec**: [specs/001-multi-user-todo/spec.md](specs/001-multi-user-todo/spec.md)
+**Input**: Feature specification from `/specs/[001-multi-user-todo]/spec.md`
 
 **Note**: This template is filled in by the `/sp.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
-Implement a secure multi-user Todo web application with JWT authentication, PostgreSQL persistence, and complete user data isolation. The application will provide authenticated users with the ability to create, view, edit, and delete their personal tasks while ensuring complete data isolation between users. The system will use a modern tech stack with Next.js 16+ frontend, FastAPI backend, and Neon Serverless PostgreSQL database with SQLModel ORM.
+Implementation of a conversational AI interface that allows users to manage their tasks through natural language chat, powered by Google's Gemini API and MCP (Model Context Protocol) tools, with a completely stateless backend architecture. The AI chatbot enables users to create, list, complete, update, and delete tasks through natural conversation while maintaining all security and data isolation properties of the existing application.
 
 ## Technical Context
 
-**Language/Version**: Python 3.9+ (backend), TypeScript 5.3+ strict mode (frontend)
-**Primary Dependencies**: FastAPI 0.109+, SQLModel 0.0.14+, Next.js 16+, Better Auth with JWT, bcrypt, python-jose
-**Storage**: Neon Serverless PostgreSQL with SQLModel ORM
-**Testing**: pytest (backend), Jest/Cypress (frontend - planned)
-**Target Platform**: Web application (browser-based)
-**Project Type**: Web application (full-stack)
-**Performance Goals**: API response time < 200ms for CRUD operations, initial load < 2 seconds on 3G
-**Constraints**: JWT tokens expire after 7 days, passwords hashed with bcrypt cost factor 12, max 1000 tasks per user
-**Scale/Scope**: Multi-user support with complete data isolation, responsive design for mobile/desktop
+**Language/Version**: Python 3.9+, TypeScript 5.3+ strict mode, Next.js 16+
+**Primary Dependencies**: FastAPI 0.109+, SQLModel 0.0.14+, Google Gemini API, MCP SDK, google-generativeai
+**Storage**: Neon Serverless PostgreSQL with conversations and messages tables
+**Testing**: pytest for backend, none for this phase (manual testing)
+**Target Platform**: Web application (Linux/Windows server, any modern browser)
+**Project Type**: Web application with frontend and backend
+**Performance Goals**: API responses <200ms for all operations, frontend load <2s on 3G
+**Constraints**: <200ms p95 for all API operations, JWT 7-day expiration, bcrypt cost 12
+**Scale/Scope**: 1000+ concurrent users, 100+ messages per conversation
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-### Core Principles Compliance
-- **User-Centric Security**: ✓ All API endpoints require JWT authentication, user data isolated by user_id
-- **Spec-Driven Development**: ✓ Following specification → planning → tasks → implementation workflow
-- **API-First Architecture**: ✓ Using RESTful API design with stateless JWT authentication
-- **Data Integrity**: ✓ Using PostgreSQL with SQLModel ORM enforcing foreign key constraints
-
-### Standards Compliance
-- **Code Quality**: ✓ TypeScript strict mode for frontend, Python type hints for backend
-- **Security Standards**: ✓ JWT tokens with 7-day expiry, bcrypt password hashing
-- **API Conventions**: ✓ All endpoints prefixed with `/api/`, standard HTTP status codes
-- **Database Standards**: ✓ SQLModel ORM with created_at/updated_at timestamps on all records
-
-### Constraint Compliance
-- **Technology Stack**: ✓ Using Next.js 16+, FastAPI, Neon PostgreSQL, SQLModel, Better Auth
-- **Development Process**: ✓ Following spec → plan → tasks → implementation workflow
-- **Performance Requirements**: ✓ Targeting <200ms API response time, <2s initial load
-- **Data Limits**: ✓ Enforcing 1-200 char titles, 0-1000 char descriptions, 1000 tasks/user limit
-
-### Non-Negotiable Rules Compliance
-- **Authentication Required**: ✓ All endpoints (except signup/signin) require JWT verification
-- **User Isolation**: ✓ All queries filtered by authenticated user ID
-- **No Manual Coding**: ✓ Using Claude Code following spec-driven workflow
-- **Type Safety**: ✓ TypeScript strict mode and Python type hints enforced
-- **Environment Variables**: ✓ Secrets managed via environment variables
-- **HTTP Standards**: ✓ Appropriate HTTP status codes used consistently
-- **Timestamps**: ✓ All records include created_at and updated_at
-- **Foreign Keys**: ✓ Relationships enforced with foreign key constraints
-- **CORS Configuration**: ✓ Proper CORS configuration required
-- **Password Hashing**: ✓ Using bcrypt with cost factor 12 for password hashing
+1. **Authentication Required**: Every API endpoint (except signup/signin) MUST verify JWT token. All new chat endpoints follow this requirement.
+2. **User Isolation**: All database queries MUST filter by authenticated user ID. New conversation and message queries enforce user isolation.
+3. **No Manual Coding**: All code changes MUST originate from specs → plan → tasks workflow. Following spec-driven approach.
+4. **Type Safety**: TypeScript strict mode and Python type hints MUST be enforced. Both frontend and backend maintain strict typing.
+5. **Environment Variables**: All secrets and configuration MUST use environment variables. GEMINI_API_KEY stored in environment.
+6. **HTTP Standards**: API endpoints MUST use appropriate status codes. Following standard HTTP practices.
+7. **Timestamps**: All database records MUST include created_at and updated_at. New tables include proper timestamps.
+8. **Foreign Keys**: All relationships MUST use foreign key constraints. New tables maintain proper relationships with users table.
+9. **CORS Configuration**: CORS MUST be properly configured. Using existing CORS setup.
+10. **Password Hashing**: Passwords MUST use industry-standard hashing algorithm. Using existing bcrypt implementation.
 
 ## Project Structure
 
 ### Documentation (this feature)
-
 ```text
-specs/[###-feature]/
+specs/001-multi-user-todo/
 ├── plan.md              # This file (/sp.plan command output)
 ├── research.md          # Phase 0 output (/sp.plan command)
 ├── data-model.md        # Phase 1 output (/sp.plan command)
@@ -74,50 +54,42 @@ specs/[###-feature]/
 ```text
 backend/
 ├── src/
-│   ├── main.py
 │   ├── models/
-│   │   ├── user.py
-│   │   └── task.py
-│   ├── schemas/
-│   │   ├── user.py
-│   │   └── task.py
-│   ├── routers/
-│   │   ├── auth.py
-│   │   └── tasks.py
+│   │   ├── task.py           # Existing task model
+│   │   ├── user.py           # Existing user model
+│   │   ├── conversation.py   # New conversation model (Phase III)
+│   │   └── message.py        # New message model (Phase III)
 │   ├── services/
-│   │   └── user_service.py
-│   └── database/
-│       └── database.py
+│   │   ├── task_service.py   # Existing task service
+│   │   └── chat_service.py   # New chat service (Phase III)
+│   ├── routers/
+│   │   ├── auth.py           # Existing auth router
+│   │   ├── tasks.py          # Existing tasks router
+│   │   └── chat.py           # New chat router (Phase III)
+│   ├── chatbot/              # New chatbot module (Phase III)
+│   │   ├── simple_agent.py   # AI agent implementation
+│   │   ├── mcp_server.py     # MCP tools server
+│   │   └── tools/            # MCP tools definitions
+│   └── main.py               # Main application (includes chat router)
 └── tests/
 
 frontend/
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx
-│   │   ├── signin/
-│   │   │   └── page.tsx
-│   │   ├── signup/
-│   │   │   └── page.tsx
-│   │   ├── dashboard/
-│   │   │   └── page.tsx
-│   │   ├── proxy.ts
-│   │   └── layout.tsx
+│   │   ├── dashboard/page.tsx # Existing dashboard
+│   │   └── chat/page.tsx      # New chat page (Phase III)
 │   ├── components/
-│   │   ├── auth-provider.tsx
-│   │   ├── signup-form.tsx
-│   │   ├── signin-form.tsx
-│   │   ├── task-form.tsx
-│   │   ├── task-list.tsx
-│   │   └── ui/
-│   ├── lib/
-│   │   ├── api-client.ts
-│   │   └── auth-client.ts
-│   └── styles/
-│       └── globals.css
+│   │   ├── auth-provider.tsx   # Existing auth provider
+│   │   ├── task-form.tsx       # Existing task form
+│   │   ├── task-list.tsx       # Existing task list
+│   │   └── ui/                 # UI components
+│   └── lib/
+│       ├── auth-client.ts     # Existing auth client
+│       └── api-client.ts      # Extended to include chat API calls
 └── tests/
 ```
 
-**Structure Decision**: Web application with separate backend (FastAPI) and frontend (Next.js) following Option 2 structure. Backend handles API and authentication, frontend provides responsive UI with authentication context management.
+**Structure Decision**: Selected web application structure with separate backend and frontend. Added new conversation and message models to backend, new chat service and router, new chatbot module with AI agent and MCP tools. Added new chat page to frontend with navigation between dashboard and chat interfaces.
 
 ## Complexity Tracking
 
@@ -125,5 +97,6 @@ frontend/
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+| Additional database tables | Need to store conversation history for AI chatbot | Would compromise stateless architecture requirement |
+| New API endpoints | Required for chat functionality | Would prevent users from accessing AI features |
+| Third-party AI service integration | Essential for natural language processing | Would limit functionality to basic CRUD operations |

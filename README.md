@@ -1,4 +1,8 @@
-# Multi-User Todo Application
+# Phase III: Todo AI Chatbot - Natural Language Task Management
+
+## Overview
+
+This project implements a conversational AI interface that allows users to manage their tasks through natural language chat, powered by Google's Gemini API and MCP (Model Context Protocol) tools, with a completely stateless backend architecture.
 
 A secure multi-user todo web application with JWT authentication, PostgreSQL persistence, and complete user data isolation.
 
@@ -8,6 +12,8 @@ A secure multi-user todo web application with JWT authentication, PostgreSQL per
 - **Backend**: FastAPI 0.109+, SQLModel 0.0.14+, Python 3.9+
 - **Database**: Neon Serverless PostgreSQL
 - **Authentication**: Better Auth with JWT (7-day expiry, bcrypt cost 12)
+- **AI Integration**: Google Gemini API with MCP tools
+- **Chat Interface**: Conversational UI with stateless architecture
 
 ## Setup
 
@@ -31,7 +37,7 @@ pip install -r requirements.txt
 
 # Configure environment
 cp .env.example .env
-# Edit .env with your DATABASE_URL, BETTER_AUTH_SECRET, and CORS_ORIGINS
+# Edit .env with your DATABASE_URL, BETTER_AUTH_SECRET, GEMINI_API_KEY, and CORS_ORIGINS
 
 # Initialize database
 python -c "from src.database import init_db; import asyncio; asyncio.run(init_db())"
@@ -64,6 +70,11 @@ npm run dev
 - ✅ Responsive UI (mobile 375px, desktop 1920px)
 - ✅ JWT authentication with 7-day expiry
 - ✅ bcrypt password hashing (cost factor 12)
+- ✅ Natural language task management via AI chatbot
+- ✅ MCP tools for standardized task operations
+- ✅ Stateless architecture with database persistence
+- ✅ Conversation history and continuity
+- ✅ Multi-user isolation for chat conversations
 
 ## API Endpoints
 
@@ -78,6 +89,9 @@ npm run dev
 - `PUT /api/{user_id}/tasks/{task_id}` - Update task
 - `DELETE /api/{user_id}/tasks/{task_id}` - Delete task
 - `PATCH /api/{user_id}/tasks/{task_id}/complete` - Toggle completion
+
+### Chat
+- `POST /api/{user_id}/chat` - Process natural language task requests
 
 ### Authentication Requirements
 
@@ -116,6 +130,86 @@ curl -X POST http://localhost:8000/api/YOUR_USER_ID/tasks \
   }'
 ```
 
+**4. Chat with the AI assistant:**
+```bash
+curl -X POST http://localhost:8000/api/YOUR_USER_ID/chat \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "conversation_id": null,
+    "message": "Add a task to buy groceries"
+  }'
+```
+
+## MCP Tools
+
+The system implements 5 standardized MCP tools for task operations:
+
+### 1. add_task
+Create a new task
+```json
+{
+  "user_id": "string",
+  "title": "string",
+  "description": "string (optional)"
+}
+```
+
+### 2. list_tasks
+Retrieve user's tasks
+```json
+{
+  "user_id": "string",
+  "status": "all|pending|completed (optional, default: all)"
+}
+```
+
+### 3. complete_task
+Mark a task as complete
+```json
+{
+  "user_id": "string",
+  "task_id": "string"
+}
+```
+
+### 4. delete_task
+Permanently remove a task
+```json
+{
+  "user_id": "string",
+  "task_id": "string"
+}
+```
+
+### 5. update_task
+Modify task title and/or description
+```json
+{
+  "user_id": "string",
+  "task_id": "string",
+  "title": "string (optional)",
+  "description": "string (optional)"
+}
+```
+
+## Database Schema
+
+### conversations table
+- `id`: SERIAL PRIMARY KEY
+- `user_id`: VARCHAR REFERENCES users(id)
+- `created_at`: TIMESTAMP DEFAULT NOW()
+- `updated_at`: TIMESTAMP DEFAULT NOW()
+
+### messages table
+- `id`: SERIAL PRIMARY KEY
+- `conversation_id`: INTEGER REFERENCES conversations(id)
+- `user_id`: VARCHAR REFERENCES users(id)
+- `role`: VARCHAR(20) CHECK (role IN ('user', 'assistant'))
+- `content`: TEXT
+- `tool_calls`: JSON
+- `created_at`: TIMESTAMP DEFAULT NOW()
+
 ## Security
 
 - JWT tokens expire after 7 days
@@ -132,6 +226,29 @@ curl -X POST http://localhost:8000/api/YOUR_USER_ID/tasks \
 - Frontend initial load <2s on 3G connection
 - Database indexes on user_id and created_at for fast queries
 
+## Architecture Principles
+
+### Stateless Design
+- Server holds NO conversation state in memory
+- All state persists to database (conversations, messages)
+- Every request is independent and self-contained
+- Horizontal scaling ready from day one
+- Server restarts do not lose conversation history
+
+### MCP Protocol Standards
+- All task operations exposed as standardized MCP tools
+- Tools follow Official MCP SDK specifications
+- Tools are stateless - receive all context in parameters
+- Tool responses are structured and predictable
+- Single source of truth for task operations
+
+### Agent Intelligence
+- AI interprets user intent from natural language
+- Agent decides which MCP tools to invoke
+- Agent can chain multiple tools in sequence
+- Agent provides friendly confirmations and feedback
+- Agent handles errors gracefully with helpful messages
+
 ## Project Structure
 
 ```
@@ -141,9 +258,22 @@ backend/
 │   ├── database.py           # Async DB connection
 │   ├── auth.py              # JWT token generation
 │   ├── models/              # SQLModel entities
+│   │   ├── task.py          # Task model
+│   │   ├── user.py          # User model
+│   │   ├── conversation.py  # Conversation model
+│   │   └── message.py       # Message model
 │   ├── routers/             # API routes
+│   │   ├── auth.py          # Authentication routes
+│   │   ├── tasks.py         # Task CRUD routes
+│   │   └── chat.py          # Chat endpoint
 │   ├── repositories/         # Data access layer
-│   └── services/            # Business logic
+│   ├── services/            # Business logic
+│   │   ├── task_service.py  # Task operations
+│   │   └── chat_service.py  # Conversation services
+│   └── chatbot/             # AI chatbot implementation
+│       ├── simple_agent.py  # AI agent with Gemini integration
+│       ├── mcp_server.py    # MCP tools for task operations
+│       └── tools/           # MCP tool definitions
 └── requirements.txt
 
 frontend/
@@ -153,6 +283,7 @@ frontend/
 │   │   ├── signin/page.tsx    # Signin page
 │   │   ├── signup/page.tsx    # Signup page
 │   │   ├── dashboard/page.tsx # Task management
+│   │   ├── chat/page.tsx      # AI chat interface
 │   │   ├── layout.tsx         # Root layout
 │   │   ├── globals.css        # Tailwind styles
 │   │   └── proxy.ts          # Next.js 16 middleware

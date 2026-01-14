@@ -129,3 +129,22 @@ export async function toggleTaskComplete(userId: string, taskId: string): Promis
     method: 'PATCH',
   });
 }
+
+// Chat endpoints
+export interface ChatRequest {
+  conversation_id?: number;
+  message: string;
+}
+
+export interface ChatResponse {
+  conversation_id: number;
+  response: string;
+  tool_calls?: Array<any>;
+}
+
+export async function sendChatMessage(userId: string, data: ChatRequest): Promise<ChatResponse> {
+  return apiRequest<ChatResponse>(`/${userId}/chat`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}

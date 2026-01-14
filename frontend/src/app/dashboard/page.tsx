@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/components/auth-provider';
 import { Task, getTasks, createTask, updateTask, deleteTask, toggleTaskComplete } from '@/lib/api-client';
 import { TaskForm } from '@/components/task-form';
@@ -114,9 +115,14 @@ export default function DashboardPage() {
               {user.email}
             </p>
           </div>
-          <Button onClick={logout} variant="outline">
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            <Link href="/chat">
+              <Button variant="outline">Chat with AI</Button>
+            </Link>
+            <Button onClick={logout} variant="outline">
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 

@@ -1,79 +1,65 @@
-# Research Summary: Multi-User Todo Web Application
+# Research: Phase III Todo AI Chatbot Implementation
 
-## Completed Research Areas
+## Decision: AI Model Selection
+**Rationale**: Selected Google's `gemini-2.0-flash` model for the AI chatbot as it provides optimal balance of speed, cost, and capability for natural language task management. This model is well-suited for interpreting conversational commands and generating appropriate tool calls.
 
-### 1. Technology Stack Selection
+**Alternatives considered**:
+- OpenAI GPT models (more expensive, requires different API integration)
+- Open-source models (require more infrastructure, less reliable for NLP tasks)
+- Custom-trained models (too complex for this phase)
 
-**Decision**: Use Next.js 16+, FastAPI, Neon Serverless PostgreSQL with SQLModel ORM
-**Rationale**: This stack provides excellent developer experience, strong typing, and robust authentication capabilities. Next.js App Router offers server-side rendering benefits, while FastAPI provides automatic API documentation and validation. Neon Serverless PostgreSQL offers easy scaling and connection pooling.
+## Decision: MCP Tools Architecture
+**Rationale**: Implemented 5 standardized MCP tools (`add_task`, `list_tasks`, `complete_task`, `update_task`, `delete_task`) following the specification. These tools provide clean separation between AI intent interpretation and actual database operations, enabling proper stateless architecture.
 
-**Alternatives Considered**:
-- React + Express: Less integrated than Next.js, more boilerplate required
-- Django: More heavyweight than needed for this application
-- MongoDB: Doesn't provide the relational integrity needed for user-task relationships
+**Alternatives considered**:
+- Direct database access from agent (violates stateless architecture principle)
+- Fewer tools with more complex parameters (less modular, harder to maintain)
+- More granular tools (unnecessary complexity for this use case)
 
-### 2. Authentication Strategy
+## Decision: Stateless Architecture Implementation
+**Rationale**: Designed completely stateless server architecture where all conversation state persists to database. Each request loads full conversation history from database, processes with AI agent, and saves responses back to database. This enables horizontal scaling and zero-downtime restarts.
 
-**Decision**: JWT tokens with 7-day expiration, stored in localStorage on frontend
-**Rationale**: JWT tokens provide stateless authentication which scales well. 7-day expiration balances security with user convenience. Storing in localStorage allows easy access from frontend components.
+**Alternatives considered**:
+- In-memory conversation cache (violates stateless requirement, not horizontally scalable)
+- Client-side state management (less secure, more complex sync logic)
+- Hybrid approach (compromises the clean stateless design)
 
-**Alternatives Considered**:
-- Session cookies: More complex to implement with separate frontend/backend
-- OAuth providers: Outside scope of basic username/password authentication
-- Shorter token lifespans: Would require refresh token implementation, increasing complexity
+## Decision: Frontend Chat Interface
+**Rationale**: Created dedicated `/chat` page in Next.js frontend with real-time messaging interface. Added navigation between dashboard and chat interface to maintain coexistence with existing Phase II UI. Used modern UI components for smooth user experience.
 
-### 3. Data Isolation Strategy
+**Alternatives considered**:
+- Embedding chat in existing dashboard (would clutter UI, less focused experience)
+- Separate application (unnecessary complexity, harder to maintain coherence)
+- Minimalist interface (would reduce usability)
 
-**Decision**: Filter all database queries by authenticated user ID
-**Rationale**: This ensures complete data isolation at the application layer. Combined with foreign key constraints, it provides both security and data integrity.
+## Decision: Database Schema Extension
+**Rationale**: Added two new tables (`conversations`, `messages`) to extend existing database schema. These tables maintain proper relationships with existing `users` table and follow same design patterns as existing schema. Includes proper indexing for performance.
 
-**Alternatives Considered**:
-- Database-level row-level security: More complex to implement and maintain
-- Separate schemas per user: Overly complex for this use case
+**Alternatives considered**:
+- Adding columns to existing tables (would mix concerns, create unnecessary complexity)
+- Separate database (unnecessary complexity, harder to maintain consistency)
+- JSON storage in existing tables (would complicate queries, reduce performance)
 
-### 4. Frontend State Management
+## Decision: Integration Approach
+**Rationale**: Maintained complete coexistence with Phase II functionality. The new chat interface and API endpoints work alongside existing REST API without interfering with each other. Same authentication system, same database, same user management.
 
-**Decision**: React Context API for authentication state, component-level state for forms
-**Rationale**: Context API provides global access to authentication state without requiring additional libraries. Component state is sufficient for form handling.
+**Alternatives considered**:
+- Replacing existing UI entirely (would lose existing functionality)
+- Separate authentication system (would create user confusion, security concerns)
+- Microservice architecture (unnecessary complexity for this phase)
 
-**Alternatives Considered**:
-- Redux/Zustand: Additional complexity not needed for this application size
-- Global state for all data: Would make components overly coupled
+## Decision: Error Handling Strategy
+**Rationale**: Comprehensive error handling at multiple levels - AI service failures, database connection issues, authentication problems, and malformed user requests. Each level has appropriate fallbacks and user-friendly messages.
 
-### 5. API Design Patterns
+**Alternatives considered**:
+- Simplified error handling (would result in poor user experience)
+- Generic error messages (would not provide helpful guidance to users)
+- Service-specific error handling (would create inconsistency across the application)
 
-**Decision**: RESTful endpoints with user ID in path for resource scoping
-**Rationale**: REST provides familiar patterns for CRUD operations. Including user ID in path makes resource scoping explicit.
+## Decision: Conversation Management
+**Rationale**: Implemented proper conversation lifecycle management with conversation creation, history loading, and context preservation. Each conversation maintains its own context while respecting user isolation requirements.
 
-**Example Pattern**:
-- GET /api/users/{user_id}/tasks - Get user's tasks
-- POST /api/users/{user_id}/tasks - Create task for user
-- PUT /api/users/{user_id}/tasks/{task_id} - Update specific task
-- DELETE /api/users/{user_id}/tasks/{task_id} - Delete specific task
-
-### 6. Error Handling Strategy
-
-**Decision**: Consistent error response format with appropriate HTTP status codes
-**Rationale**: Standardized error responses make client-side error handling predictable. Proper status codes enable appropriate client responses.
-
-**Response Format**:
-```json
-{
-  "detail": "Human-readable error message",
-  "code": "machine-readable-error-code"
-}
-```
-
-### 7. Validation Strategy
-
-**Decision**: Backend validation with Pydantic schemas, frontend validation with immediate feedback
-**Rationale**: Backend validation ensures data integrity regardless of client. Frontend validation provides immediate user feedback.
-
-**Validation Levels**:
-- Type validation via TypeScript/Pydantic
-- Format validation (email, password strength)
-- Business rule validation (task title length, user limits)
-
-## Resolved Unknowns
-
-All "NEEDS CLARIFICATION" items from the Technical Context have been resolved through research and are reflected in the decisions above.
+**Alternatives considered**:
+- No conversation persistence (would create confusing user experience)
+- Shared conversation context (would violate user isolation requirements)
+- Complex conversation threading (would add unnecessary complexity for this phase)
