@@ -1,0 +1,32 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+
+# UV cache
+.uv/
+
+# IDE files
+.idea/
+.vscode/
+
+# Git
+.git/
+.gitignore
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+
+# OS files
+.DS_Store
+# Node.js
+node_modules/

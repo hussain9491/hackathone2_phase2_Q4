@@ -1,0 +1,65 @@
+services:
+  python-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    # Expose FastAPI default port (assumed 8000, adjust if needed)
+    ports:
+      - "8000:8000"
+    # Use env_file if .env exists in backend directory
+    env_file:
+      - ./backend/.env
+    networks:
+      - app-network
+    depends_on:
+      - postgres-db  # Ensure DB is up before backend starts
+    # Add comments for developer clarity
+    # CMD is set in Dockerfile to run src/main.py
+
+  typescript-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    ports:
+      - "3000:3000"  # Next.js default port
+    # Use env_file if .env.local exists in frontend directory
+    env_file:
+      - ./frontend/.env.local
+    networks:
+      - app-network
+    depends_on:
+      - python-backend  # Frontend expects backend API
+    # CMD is set in Dockerfile to run Next.js server
+
+  # External service: PostgreSQL database for backend
+  postgres-db:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: todo_chatbot
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Official image, persistent storage enabled
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    # Persistent volume for PostgreSQL data
